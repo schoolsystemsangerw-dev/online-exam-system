@@ -95,8 +95,8 @@ async function handleUserLogin(user) {
     const role = profile?.role || user.user_metadata?.role || 'teacher';
 
     document.getElementById('auth-status').innerText = `${fullName} (${role.toUpperCase()})`;
-    document.getElementById('logout-btn').classList.remove('hidden');
-    document.getElementById('auth-section').classList.add('hidden');
+    document.getElementById('logout-btn')?.classList.remove('hidden');
+    document.getElementById('auth-section')?.classList.add('hidden');
 
     if (role === 'teacher') {
         document.getElementById('teacher-dashboard')?.classList.remove('hidden');
@@ -108,12 +108,15 @@ async function handleUserLogin(user) {
     loadExams();
 }
 
-// Fetch and Render Exams
+// Fetch and Render Exams (Targeting both Teacher and Student list containers)
 async function loadExams() {
-    const listContainer = document.getElementById('exams-list');
-    if (!listContainer) return;
+    const studentContainer = document.getElementById('exams-list');
+    const teacherContainer = document.getElementById('teacher-exams-list');
 
-    listContainer.innerHTML = '<p class="text-gray-500 py-4">Loading exams...</p>';
+    const containers = [studentContainer, teacherContainer].filter(Boolean);
+    if (containers.length === 0) return;
+
+    containers.forEach(c => c.innerHTML = '<p class="text-gray-500 py-4">Loading exams...</p>');
 
     const { data: exams, error } = await supabase
         .from('exams')
@@ -122,16 +125,16 @@ async function loadExams() {
 
     if (error) {
         console.error("Error loading exams:", error);
-        listContainer.innerHTML = `<p class="text-red-500 py-4">Failed to load exams: ${error.message}</p>`;
+        containers.forEach(c => c.innerHTML = `<p class="text-red-500 py-4">Failed to load exams: ${error.message}</p>`);
         return;
     }
 
     if (!exams || exams.length === 0) {
-        listContainer.innerHTML = '<p class="text-gray-500 py-4">No examinations available at the moment.</p>';
+        containers.forEach(c => c.innerHTML = '<p class="text-gray-500 py-4">No examinations available at the moment.</p>');
         return;
     }
 
-    listContainer.innerHTML = exams.map(exam => `
+    const htmlContent = exams.map(exam => `
         <div class="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm hover:shadow-md transition flex justify-between items-center">
             <div>
                 <h4 class="font-bold text-lg text-blue-900">${exam.title} (${exam.subject})</h4>
@@ -143,18 +146,21 @@ async function loadExams() {
             </button>
         </div>
     `).join('');
+
+    containers.forEach(c => c.innerHTML = htmlContent);
 }
 
-// Download/View PDF Handler
+// Download/View PDF Handler (Generates Signed URL to prevent 404 access errors)
 window.downloadExamPDF = async function(filePath) {
-    const { data, error } = supabase.storage
+    // Generates a 60-second temporary secure download URL
+    const { data, error } = await supabase.storage
         .from('exam-papers')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60);
 
     if (error) {
         alert("Error retrieving file: " + error.message);
-    } else if (data?.publicUrl) {
-        window.open(data.publicUrl, '_blank');
+    } else if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
     }
 };
 
