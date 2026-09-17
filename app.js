@@ -102,7 +102,7 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
 });
 
     // 1. Create auth account passing user metadata
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+   const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -111,7 +111,8 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     });
 
     if (authError) {
-        return alert("Registration Error: " + authError.message);
+        alert("Registration Error: " + authError.message);
+        return;
     }
 
     if (authData.user) {
@@ -128,6 +129,10 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
             console.warn("Profile table warning (trigger may have handled this):", profileError.message);
         }
 
+        alert("Account created successfully!");
+        handleUserLogin(authData.user);
+    }
+});
         alert("Account created successfully!");
         handleUserLogin(authData.user);
     }
