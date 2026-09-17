@@ -58,6 +58,7 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     const password = document.getElementById('signup-password').value;
     const role = document.getElementById('signup-role').value;
 
+    // 1. Create auth account passing user metadata
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -71,19 +72,24 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     }
 
     if (authData.user) {
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert([{
-                id: authData.user.id,
-                full_name: fullName,
-                role: role
-            }]);
+        // 2. Safe profile sync attempt
+        try {
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .upsert([{
+                    id: authData.user.id,
+                    full_name: fullName,
+                    role: role
+                }], { onConflict: 'id' });
 
-        if (profileError) {
-            console.error("Failed to sync profile record:", profileError.message);
+            if (profileError) {
+                console.warn("Profile table write warning (will fallback on session load):", profileError.message);
+            }
+        } catch (err) {
+            console.warn("Handled profile sync exception:", err);
         }
 
-        alert("Account created successfully! Logging you in...");
+        alert("Account created successfully!");
         handleUserLogin(authData.user);
     }
 });
@@ -128,15 +134,15 @@ async function handleUserLogin(user) {
                 id: user.id,
                 full_name: fallbackName,
                 role: fallbackRole
-            }])
+            }], { onConflict: 'id' })
             .select()
-            .single();
+            .maybeSingle();
 
         profile = newProfile;
     }
 
     const fullName = profile?.full_name || user.user_metadata?.full_name || 'User';
-    const role = profile?.role || user.user_metadata?.role || 'teacher';
+    const role = profile?.role || user.user_metadata?.role || 'student';
 
     document.getElementById('auth-status').innerText = `${fullName} (${role.toUpperCase()})`;
     document.getElementById('logout-btn')?.classList.remove('hidden');
