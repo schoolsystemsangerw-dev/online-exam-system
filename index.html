@@ -7,111 +7,151 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="app.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800 font-sans">
+<body class="bg-gray-100 min-h-screen text-gray-800 font-sans flex flex-col justify-between">
 
-    <!-- Header Navigation -->
-    <header class="bg-blue-700 text-white p-4 shadow-md flex justify-between items-center">
-        <h1 class="text-2xl font-bold">Online Exam Portal</h1>
-        <div class="flex items-center gap-4">
-            <span id="auth-status" class="text-sm">Not Signed In</span>
-            <button id="logout-btn" class="hidden bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">Logout</button>
+    <div>
+        <!-- MOVING TICKER BANNER AT TOP -->
+        <div class="bg-yellow-400 text-blue-900 font-bold py-2 px-4 shadow-inner overflow-hidden whitespace-nowrap">
+            <marquee behavior="scroll" direction="left" scrollamount="6">
+                📢 Welcome to the Online Examination Management Portal! Teachers can publish exams and grade submissions. Students can download exam papers and submit their completed work online. 🚀
+            </marquee>
         </div>
-    </header>
 
-    <main class="max-w-6xl mx-auto my-8 p-4">
-
-        <!-- AUTH SECTION -->
-        <section id="auth-section" class="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
-            <!-- Toggle Tabs -->
-            <div class="flex border-b mb-4">
-                <button id="tab-login" class="w-1/2 py-2 text-center font-bold border-b-2 border-blue-600 text-blue-600">Sign In</button>
-                <button id="tab-signup" class="w-1/2 py-2 text-center font-bold text-gray-500 border-b-2 border-transparent">Register Account</button>
+        <!-- Header Navigation -->
+        <header class="bg-blue-700 text-white p-4 shadow-md flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Online Exam Portal</h1>
+            <div class="flex items-center gap-4">
+                <span id="auth-status" class="text-sm">Not Signed In</span>
+                <button id="logout-btn" class="hidden bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">Logout</button>
             </div>
+        </header>
 
-            <!-- LOGIN FORM -->
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium">Email</label>
-                    <input type="email" id="email" required class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium">Password</label>
-                    <input type="password" id="password" required class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700">Login</button>
-            </form>
+        <main class="max-w-6xl mx-auto my-8 p-4">
 
-            <!-- SIGNUP FORM -->
-            <form id="signup-form" class="space-y-4 hidden">
-                <div>
-                    <label class="block text-sm font-medium">Full Name</label>
-                    <input type="text" id="signup-name" required class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
+            <!-- AUTH SECTION -->
+            <section id="auth-section" class="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
+                <!-- Toggle Tabs -->
+                <div class="flex border-b mb-4">
+                    <button id="tab-login" class="w-1/2 py-2 text-center font-bold border-b-2 border-blue-600 text-blue-600">Sign In</button>
+                    <button id="tab-signup" class="w-1/2 py-2 text-center font-bold text-gray-500 border-b-2 border-transparent">Register Account</button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium">Email</label>
-                    <input type="email" id="signup-email" required class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium">Password</label>
-                    <input type="password" id="signup-password" required minlength="6" class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium">Account Type</label>
-                    <select id="signup-role" class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
-                        <option value="teacher">Teacher</option>
-                        <option value="student">Student</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700">Create Account</button>
-            </form>
-        </section>
 
-        <!-- TEACHER DASHBOARD -->
-        <section id="teacher-dashboard" class="hidden space-y-8">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-2xl font-bold text-blue-700 mb-4">Upload & Publish New Exam</h2>
-                <form id="create-exam-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- LOGIN FORM -->
+                <form id="login-form" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium">Exam Title</label>
-                        <input type="text" id="exam-title" required class="w-full border p-2 rounded">
+                        <label class="block text-sm font-medium">Email</label>
+                        <input type="email" id="email" required class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium">Subject</label>
-                        <input type="text" id="exam-subject" required class="w-full border p-2 rounded">
+                        <label class="block text-sm font-medium">Password</label>
+                        <input type="password" id="password" required class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium">Class Name</label>
-                        <input type="text" id="exam-class" required class="w-full border p-2 rounded">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Total Marks</label>
-                        <input type="number" id="exam-marks" value="100" required class="w-full border p-2 rounded">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Submission Deadline</label>
-                        <input type="datetime-local" id="exam-deadline" required class="w-full border p-2 rounded">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Upload Exam PDF</label>
-                        <input type="file" id="exam-file" accept=".pdf" required class="w-full border p-1 rounded">
-                    </div>
-                    <div class="md:col-span-2">
-                        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded font-semibold hover:bg-green-700">Publish Exam</button>
-                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700">Login</button>
                 </form>
-            </div>
-        </section>
 
-        <!-- STUDENT DASHBOARD -->
-        <section id="student-dashboard" class="hidden space-y-8">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-2xl font-bold text-blue-700 mb-4">Available Examinations</h2>
-                <div id="student-exams-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <p class="text-gray-500">Loading exams...</p>
+                <!-- SIGNUP FORM -->
+                <form id="signup-form" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-sm font-medium">Full Name</label>
+                        <input type="text" id="signup-name" required class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Email</label>
+                        <input type="email" id="signup-email" required class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Password</label>
+                        <input type="password" id="signup-password" required minlength="6" class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Account Type</label>
+                        <select id="signup-role" class="w-full border p-2 rounded mt-1 focus:ring-2 focus:ring-blue-500">
+                            <option value="teacher">Teacher</option>
+                            <option value="student">Student</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700">Create Account</button>
+                </form>
+            </section>
+
+            <!-- TEACHER DASHBOARD -->
+            <section id="teacher-dashboard" class="hidden space-y-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold text-blue-700 mb-4">Upload & Publish New Exam</h2>
+                    <form id="create-exam-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium">Exam Title</label>
+                            <input type="text" id="exam-title" required class="w-full border p-2 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Subject</label>
+                            <input type="text" id="exam-subject" required class="w-full border p-2 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Class Name</label>
+                            <input type="text" id="exam-class" required class="w-full border p-2 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Total Marks</label>
+                            <input type="number" id="exam-marks" value="100" required class="w-full border p-2 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Submission Deadline</label>
+                            <input type="datetime-local" id="exam-deadline" required class="w-full border p-2 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Upload Exam PDF</label>
+                            <input type="file" id="exam-file" accept=".pdf" required class="w-full border p-1 rounded">
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded font-semibold hover:bg-green-700">Publish Exam</button>
+                        </div>
+                    </form>
                 </div>
-            </div>
-        </section>
+            </section>
 
-    </main>
+            <!-- STUDENT DASHBOARD -->
+            <section id="student-dashboard" class="hidden space-y-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold text-blue-700 mb-4">Available Examinations</h2>
+                    <div id="student-exams-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <p class="text-gray-500">Loading exams...</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- FOOTER SECTION -->
+    <footer class="bg-gray-800 text-white mt-12 pt-8 pb-6 border-t-4 border-blue-600">
+        <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+            <div>
+                <h3 class="text-lg font-bold text-blue-400 mb-2">About The System</h3>
+                <p class="text-sm text-gray-300">
+                    A web-based examination platform empowering teachers to easily publish exams, collect student submissions, and manage evaluation scores securely.
+                </p>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-blue-400 mb-2">Quick Information</h3>
+                <ul class="text-sm text-gray-300 space-y-1">
+                    <li>✓ Safe PDF File Storage</li>
+                    <li>✓ Real-time Exam Publishing</li>
+                    <li>✓ Role-based Access Control</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-blue-400 mb-2">Technical Support</h3>
+                <p class="text-sm text-gray-300">
+                    For system inquiries or administrative support, contact the development administrator directly.
+                </p>
+            </div>
+        </div>
+        
+        <div class="text-center text-xs text-gray-400 border-t border-gray-700 pt-4">
+            Created and designed by <a href="mailto:schoolsystems.ange.rw@gmail.com" class="text-blue-400 underline hover:text-blue-300">schoolsystems.ange.rw@gmail.com</a>
+        </div>
+    </footer>
+
 </body>
 </html>
