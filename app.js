@@ -57,6 +57,49 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     const role = document.getElementById('signup-role').value;
+    
+    // Read phone and address fields
+    const phone = document.getElementById('signup-phone')?.value || '';
+    const address = document.getElementById('signup-address')?.value || '';
+
+    // 1. Create auth account with full metadata
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: { 
+                full_name: fullName, 
+                role: role,
+                phone: phone,
+                address: address
+            }
+        }
+    });
+
+    if (authError) {
+        return alert("Registration Error: " + authError.message);
+    }
+
+    if (authData.user) {
+        // 2. Insert into profiles table with phone and address
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert([{
+                id: authData.user.id,
+                full_name: fullName,
+                role: role,
+                phone: phone,
+                address: address
+            }], { onConflict: 'id' });
+
+        if (profileError) {
+            console.warn("Profile table error:", profileError.message);
+        }
+
+        alert("Account created successfully!");
+        handleUserLogin(authData.user);
+    }
+});
 
     // 1. Create auth account passing user metadata
     const { data: authData, error: authError } = await supabase.auth.signUp({
