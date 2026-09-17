@@ -39,7 +39,7 @@ document.getElementById('tab-signup')?.addEventListener('click', () => {
     document.getElementById('signup-form').classList.remove('hidden');
     document.getElementById('login-form').classList.add('hidden');
     document.getElementById('tab-signup').className = "w-1/2 py-3 text-center font-semibold border-b-2 border-indigo-600 text-indigo-600 transition-colors";
-    document.getElementById('tab-login').className = "w-1/2 py-2 text-center font-semibold text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-colors";
+    document.getElementById('tab-login').className = "w-1/2 py-3 text-center font-semibold text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-colors";
 });
 
 // Initialize Session Check
@@ -551,16 +551,18 @@ window.uploadStudentSubmission = async function(examId) {
     }
 };
 
-// Teacher Portal: Load Student Submissions
+// Teacher Portal: Load Student Submissions with Enrolled Student Names
 async function loadTeacherSubmissions() {
     const container = document.getElementById('teacher-submissions-list');
     if (!container) return;
 
+    // Join with profiles table to display student name alongside exam info
     const { data: submissions, error } = await supabase
         .from('submissions')
         .select(`
             *,
-            exams(title, total_marks)
+            exams(title, total_marks),
+            profiles(full_name)
         `)
         .order('submitted_at', { ascending: false });
 
@@ -574,26 +576,34 @@ async function loadTeacherSubmissions() {
         return;
     }
 
-    container.innerHTML = submissions.map(sub => `
-        <div class="border border-slate-200/80 p-5 rounded-2xl bg-slate-50/50 hover:bg-white transition-all duration-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="space-y-1">
-                <p class="font-bold text-slate-900">${escapeHtml(sub.exams?.title || 'Exam Submission')}</p>
-                <p class="text-xs text-slate-500">Submitted: ${new Date(sub.submitted_at).toLocaleString()}</p>
-                <button onclick="downloadExamPDF('${sub.file_path}')" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold mt-1 inline-flex items-center gap-1 transition">
-                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-                    <span>Download Student File</span>
-                </button>
+    container.innerHTML = submissions.map(sub => {
+        const studentName = sub.profiles?.full_name || 'Student';
+        return `
+            <div class="border border-slate-200/80 p-5 rounded-2xl bg-slate-50/50 hover:bg-white transition-all duration-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <p class="font-bold text-slate-900">${escapeHtml(sub.exams?.title || 'Exam Submission')}</p>
+                        <span class="bg-slate-200 text-slate-700 text-xs px-2.5 py-0.5 rounded-full font-semibold">
+                            ${escapeHtml(studentName)}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500">Submitted: ${new Date(sub.submitted_at).toLocaleString()}</p>
+                    <button onclick="downloadExamPDF('${sub.file_path}')" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold mt-1 inline-flex items-center gap-1 transition">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                        <span>Download Student File</span>
+                    </button>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto bg-white p-2.5 rounded-xl border border-slate-200">
+                    <input type="number" id="marks-${sub.id}" placeholder="Marks / ${sub.exams?.total_marks || 100}" value="${sub.marks_obtained !== null ? sub.marks_obtained : ''}" class="border border-slate-300 px-3 py-1.5 text-xs rounded-lg w-full sm:w-32 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <input type="text" id="feedback-${sub.id}" placeholder="Optional feedback" value="${escapeHtml(sub.teacher_feedback || '')}" class="border border-slate-300 px-3 py-1.5 text-xs rounded-lg w-full sm:w-48 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <button onclick="submitStudentGrade('${sub.id}')" class="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs px-4 py-2 rounded-lg font-semibold transition shadow-sm w-full sm:w-auto flex items-center justify-center gap-1">
+                        <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                        <span>Save Grade</span>
+                    </button>
+                </div>
             </div>
-            <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto bg-white p-2.5 rounded-xl border border-slate-200">
-                <input type="number" id="marks-${sub.id}" placeholder="Marks / ${sub.exams?.total_marks || 100}" value="${sub.marks_obtained !== null ? sub.marks_obtained : ''}" class="border border-slate-300 px-3 py-1.5 text-xs rounded-lg w-full sm:w-32 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <input type="text" id="feedback-${sub.id}" placeholder="Optional feedback" value="${escapeHtml(sub.teacher_feedback || '')}" class="border border-slate-300 px-3 py-1.5 text-xs rounded-lg w-full sm:w-48 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <button onclick="submitStudentGrade('${sub.id}')" class="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs px-4 py-2 rounded-lg font-semibold transition shadow-sm w-full sm:w-auto flex items-center justify-center gap-1">
-                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                    <span>Save Grade</span>
-                </button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     refreshIcons();
 }
