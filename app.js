@@ -81,22 +81,27 @@ document.getElementById('logout-btn')?.addEventListener('click', async () => {
 async function handleUserLogin(user) {
     currentUser = user;
     
+    // Using maybeSingle() eliminates the JSON coercion error if trigger timing delays
     const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
     if (error) {
         alert("Profile fetch error: " + error.message);
         return;
     }
 
-    document.getElementById('auth-status').innerText = `${profile.full_name} (${profile.role.toUpperCase()})`;
+    // Safely retrieve name and role from profile or raw auth metadata
+    const fullName = profile?.full_name || user.user_metadata?.full_name || 'User';
+    const role = profile?.role || user.user_metadata?.role || 'teacher';
+
+    document.getElementById('auth-status').innerText = `${fullName} (${role.toUpperCase()})`;
     document.getElementById('logout-btn').classList.remove('hidden');
     document.getElementById('auth-section').classList.add('hidden');
 
-    if (profile.role === 'teacher') {
+    if (role === 'teacher') {
         document.getElementById('teacher-dashboard').classList.remove('hidden');
     } else {
         document.getElementById('student-dashboard').classList.remove('hidden');
