@@ -38,7 +38,6 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     const password = document.getElementById('signup-password').value;
     const role = document.getElementById('signup-role').value;
 
-    // Sign up user with user_metadata (Database trigger handles profile row creation)
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -81,7 +80,6 @@ document.getElementById('logout-btn')?.addEventListener('click', async () => {
 async function handleUserLogin(user) {
     currentUser = user;
     
-    // Using maybeSingle() eliminates the JSON coercion error if trigger timing delays
     const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -93,7 +91,6 @@ async function handleUserLogin(user) {
         return;
     }
 
-    // Safely retrieve name and role from profile or raw auth metadata
     const fullName = profile?.full_name || user.user_metadata?.full_name || 'User';
     const role = profile?.role || user.user_metadata?.role || 'teacher';
 
@@ -102,11 +99,64 @@ async function handleUserLogin(user) {
     document.getElementById('auth-section').classList.add('hidden');
 
     if (role === 'teacher') {
-        document.getElementById('teacher-dashboard').classList.remove('hidden');
+        document.getElementById('teacher-dashboard')?.classList.remove('hidden');
     } else {
-        document.getElementById('student-dashboard').classList.remove('hidden');
+        document.getElementById('student-dashboard')?.classList.remove('hidden');
     }
+
+    // Load exams for logged-in user
+    loadExams();
 }
+
+// Fetch and Render Exams
+async function loadExams() {
+    const listContainer = document.getElementById('exams-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '<p class="text-gray-500 py-4">Loading exams...</p>';
+
+    const { data: exams, error } = await supabase
+        .from('exams')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Error loading exams:", error);
+        listContainer.innerHTML = `<p class="text-red-500 py-4">Failed to load exams: ${error.message}</p>`;
+        return;
+    }
+
+    if (!exams || exams.length === 0) {
+        listContainer.innerHTML = '<p class="text-gray-500 py-4">No examinations available at the moment.</p>';
+        return;
+    }
+
+    listContainer.innerHTML = exams.map(exam => `
+        <div class="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm hover:shadow-md transition flex justify-between items-center">
+            <div>
+                <h4 class="font-bold text-lg text-blue-900">${exam.title} (${exam.subject})</h4>
+                <p class="text-sm text-gray-600">Class: <span class="font-semibold">${exam.class_name}</span> | Total Marks: <span class="font-semibold">${exam.total_marks}</span></p>
+                <p class="text-xs text-gray-500 mt-1">Deadline: ${new Date(exam.deadline).toLocaleString()}</p>
+            </div>
+            <button onclick="downloadExamPDF('${exam.file_path}')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded text-sm transition">
+                Download PDF
+            </button>
+        </div>
+    `).join('');
+}
+
+// Download/View PDF Handler
+window.downloadExamPDF = async function(filePath) {
+    const { data, error } = supabase.storage
+        .from('exam-papers')
+        .getPublicUrl(filePath);
+
+    if (error) {
+        alert("Error retrieving file: " + error.message);
+    } else if (data?.publicUrl) {
+        window.open(data.publicUrl, '_blank');
+    }
+};
 
 // Teacher Exam Creation Handler
 document.getElementById('create-exam-form')?.addEventListener('submit', async (e) => {
@@ -118,6 +168,10 @@ document.getElementById('create-exam-form')?.addEventListener('submit', async (e
     const totalMarks = document.getElementById('exam-marks').value;
     const deadline = document.getElementById('exam-deadline').value;
     const file = document.getElementById('exam-file').files[0];
+
+    if (!file) {
+        return alert("Please select a PDF file to upload.");
+    }
 
     const filePath = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
 
@@ -146,5 +200,6 @@ document.getElementById('create-exam-form')?.addEventListener('submit', async (e
     } else {
         alert('Exam published successfully!');
         e.target.reset();
+        loadExams(); // Refresh list immediately after posting
     }
 });
