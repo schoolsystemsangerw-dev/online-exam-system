@@ -89,6 +89,7 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
         handleUserLogin(authData.user);
     }
 });
+
 // Login Handler
 document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -146,6 +147,7 @@ async function handleUserLogin(user) {
     if (role === 'teacher') {
         document.getElementById('teacher-dashboard')?.classList.remove('hidden');
         loadTeacherClassesSelect();
+        loadTeacherClassesAndStudents();
         loadTeacherSubmissions();
     } else {
         document.getElementById('student-dashboard')?.classList.remove('hidden');
@@ -179,33 +181,137 @@ document.getElementById('create-class-form')?.addEventListener('submit', async (
         alert(`Class created successfully!\nShare code: [ ${classCode} ] with your students.`);
         e.target.reset();
         loadTeacherClassesSelect();
+        loadTeacherClassesAndStudents();
     }
 });
 
-// 2. Load Teacher Classes into Exam Creation Form Options
+// 2. Load Teacher Classes into Exam Creation Form Drop-down (<select>)
 async function loadTeacherClassesSelect() {
-    const classInput = document.getElementById('exam-class');
-    if (!classInput || !currentUser) return;
+    const classSelect = document.getElementById('exam-class');
+    if (!classSelect || !currentUser) return;
 
     const { data: classes, error } = await supabase
         .from('classes')
-        .select('id, class_name, class_code')
-        .eq('teacher_id', currentUser.id);
+        .select('id, class_name, class_code, subject')
+        .eq('teacher_id', currentUser.id)
+        .order('class_name', { ascending: true });
 
-    if (error || !classes || classes.length === 0) return;
-
-    let dataList = document.getElementById('teacher-classes-list');
-    if (!dataList) {
-        dataList = document.createElement('datalist');
-        dataList.id = 'teacher-classes-list';
-        document.body.appendChild(dataList);
-        classInput.setAttribute('list', 'teacher-classes-list');
+    if (error) {
+        console.error("Error fetching teacher classes:", error.message);
+        return;
     }
 
-    dataList.innerHTML = classes.map(c => `<option value="${escapeHtml(c.class_name)}">Code: ${escapeHtml(c.class_code)}</option>`).join('');
+    classSelect.innerHTML = '<option value="">-- Select Created Class --</option>';
+
+    if (!classes || classes.length === 0) {
+        classSelect.innerHTML += '<option value="" disabled>No classes created yet</option>';
+        return;
+    }
+
+    classes.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.class_name;
+        option.textContent = `${c.class_name} (${c.subject}) - Code: ${c.class_code}`;
+        classSelect.appendChild(option);
+    });
 }
 
-// 3. Student Joins Class Using Join Code
+// 3. Load Teacher's Created Classes and Enrolled Students Card Section
+window.loadTeacherClassesAndStudents = async function() {
+    const container = document.getElementById('teacher-classes-cards');
+    if (!container || !currentUser) return;
+
+    container.innerHTML = '<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl col-span-2">Loading classes and enrolled students...</p>';
+
+    // Fetch classes created by this teacher
+    const { data: classes, error: classError } = await supabase
+        .from('classes')
+        .select('*')
+        .eq('teacher_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+    if (classError) {
+        container.innerHTML = `<p class="text-rose-600 bg-rose-50 p-4 rounded-xl border border-rose-200 text-sm col-span-2">Error loading classes: ${escapeHtml(classError.message)}</p>`;
+        return;
+    }
+
+    if (!classes || classes.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 py-6 text-center italic border border-dashed border-slate-200 rounded-xl col-span-2">You have not created any class codes yet. Create a class code using the form above.</p>';
+        return;
+    }
+
+    // Fetch enrollments with student profile details for these classes
+    const classIds = classes.map(c => c.id);
+    const { data: enrollments, error: enrollError } = await supabase
+        .from('class_enrollments')
+        .select('class_id, student_id, profiles(full_name)')
+        .in('class_id', classIds);
+
+    if (enrollError) {
+        console.warn("Could not fetch enrollment details:", enrollError.message);
+    }
+
+    // Group students by class_id
+    const studentMap = {};
+    if (enrollments) {
+        enrollments.forEach(item => {
+            if (!studentMap[item.class_id]) {
+                studentMap[item.class_id] = [];
+            }
+            if (item.profiles?.full_name) {
+                studentMap[item.class_id].push(item.profiles.full_name);
+            }
+        });
+    }
+
+    container.innerHTML = classes.map(c => {
+        const students = studentMap[c.id] || [];
+        return `
+            <div class="border border-slate-200/80 rounded-2xl p-5 bg-slate-50/50 hover:bg-white transition-all duration-200 shadow-sm flex flex-col justify-between gap-4">
+                <div class="space-y-2">
+                    <div class="flex justify-between items-start gap-2">
+                        <h4 class="font-bold text-slate-900 text-lg">${escapeHtml(c.class_name)}</h4>
+                        <span class="bg-indigo-100 text-indigo-800 text-xs font-mono font-bold px-3 py-1 rounded-full border border-indigo-200 shrink-0">
+                            Code: ${escapeHtml(c.class_code)}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-medium">Subject: <span class="text-slate-800 font-semibold">${escapeHtml(c.subject)}</span></p>
+                </div>
+
+                <div class="border-t border-slate-200/80 pt-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                            <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            Enrolled Students
+                        </span>
+                        <span class="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">
+                            ${students.length}
+                        </span>
+                    </div>
+
+                    ${students.length > 0 ? `
+                        <ul class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                            ${students.map(name => `
+                                <li class="text-xs bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-2 text-slate-700">
+                                    <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-500 shrink-0"></i>
+                                    <span class="font-medium">${escapeHtml(name)}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    ` : `
+                        <p class="text-xs text-slate-400 italic bg-white p-2.5 rounded-lg border border-slate-200 text-center">
+                            No students enrolled yet.
+                        </p>
+                    `}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    refreshIcons();
+};
+
+// 4. Student Joins Class Using Join Code
 document.getElementById('join-class-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const inputCode = document.getElementById('join-code').value.toUpperCase().trim();
@@ -252,6 +358,7 @@ document.getElementById('create-exam-form')?.addEventListener('submit', async (e
     const deadline = document.getElementById('exam-deadline').value;
     const file = document.getElementById('exam-file').files[0];
 
+    if (!className) return alert("Please select a target class.");
     if (!file) return alert("Please select a PDF file to upload.");
 
     const filePath = `exams/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
@@ -547,7 +654,7 @@ async function loadStudentResults() {
             </div>
             <div>
                 ${sub.marks_obtained !== null 
-                    ? `<span class="bg-emerald-100 text-emerald-800 font-bold px-3.5 py-1.5 rounded-full text-xs border border-emerald-200 inline-flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> ${sub.marks_obtained} / ${sub.exams?.total_marks} Marks</span>`
+                    ? `<span class="bg-emerald-100 text-emerald-800 font-bold px-3.5 py-1.5 rounded-full text-xs border border-emerald-200 inline-flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> ${sub.marks_obtained} /${sub.exams?.total_marks} Marks</span>`
                     : `<span class="bg-amber-100 text-amber-800 font-semibold px-3 py-1.5 rounded-full text-xs border border-amber-200 inline-flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> Pending Grade</span>`
                 }
             </div>
