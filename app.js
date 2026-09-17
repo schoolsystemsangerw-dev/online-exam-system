@@ -53,6 +53,19 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     }
 
     if (authData.user) {
+        // Upsert user details directly into public.profiles table
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert([{
+                id: authData.user.id,
+                full_name: fullName,
+                role: role
+            }]);
+
+        if (profileError) {
+            console.error("Failed to sync profile record:", profileError.message);
+        }
+
         alert("Account created successfully! Logging you in...");
         handleUserLogin(authData.user);
     }
@@ -82,11 +95,29 @@ document.getElementById('logout-btn')?.addEventListener('click', async () => {
 async function handleUserLogin(user) {
     currentUser = user;
     
-    const { data: profile } = await supabase
+    // Check if profile exists; create if missing
+    let { data: profile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
+
+    if (!profile) {
+        const fallbackName = user.user_metadata?.full_name || 'User';
+        const fallbackRole = user.user_metadata?.role || 'student';
+        
+        const { data: newProfile } = await supabase
+            .from('profiles')
+            .upsert([{
+                id: user.id,
+                full_name: fallbackName,
+                role: fallbackRole
+            }])
+            .select()
+            .single();
+
+        profile = newProfile;
+    }
 
     const fullName = profile?.full_name || user.user_metadata?.full_name || 'User';
     const role = profile?.role || user.user_metadata?.role || 'teacher';
