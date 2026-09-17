@@ -100,41 +100,170 @@ async function handleUserLogin(user) {
 
     if (role === 'teacher') {
         document.getElementById('teacher-dashboard')?.classList.remove('hidden');
+        loadTeacherClassesSelect();
     } else {
         document.getElementById('student-dashboard')?.classList.remove('hidden');
     }
 
     // Load exams for logged-in user
-    loadExams();
+    loadExams(role);
 }
 
-// Fetch and Render Exams (Targeting both Teacher and Student list containers)
-async function loadExams() {
+// ==========================================
+// CLASS CREATION & ENROLLMENT HANDLERS
+// ==========================================
+
+// 1. Teacher Creates a New Class
+document.getElementById('create-class-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const className = document.getElementById('class-title').value;
+    const subject = document.getElementById('class-subject').value;
+    const classCode = document.getElementById('class-code').value.toUpperCase().trim();
+
+    const { error } = await supabase.from('classes').insert([{
+        class_name: className,
+        subject: subject,
+        class_code: classCode,
+        teacher_id: currentUser.id
+    }]);
+
+    if (error) {
+        alert("Error creating class code: " + error.message);
+    } else {
+        alert(`Class created successfully!\nShare code: [ ${classCode} ] with your students.`);
+        e.target.reset();
+        loadTeacherClassesSelect();
+    }
+});
+
+// 2. Load Teacher Classes into Exam Creation Form Options
+async function loadTeacherClassesSelect() {
+    const classInput = document.getElementById('exam-class');
+    if (!classInput || !currentUser) return;
+
+    const { data: classes, error } = await supabase
+        .from('classes')
+        .select('id, class_name, class_code')
+        .eq('teacher_id', currentUser.id);
+
+    if (error || !classes || classes.length === 0) return;
+
+    // Convert input field behavior to datalist options if available
+    let dataList = document.getElementById('teacher-classes-list');
+    if (!dataList) {
+        dataList = document.createElement('datalist');
+        dataList.id = 'teacher-classes-list';
+        document.body.appendChild(dataList);
+        classInput.setAttribute('list', 'teacher-classes-list');
+    }
+
+    dataList.innerHTML = classes.map(c => `<option value="${c.class_name}">Code: ${c.class_code}</option>`).join('');
+}
+
+// 3. Student Joins Class Using Join Code
+document.getElementById('join-class-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const inputCode = document.getElementById('join-code').value.toUpperCase().trim();
+
+    // Verify class code exists
+    const { data: classData, error: classError } = await supabase
+        .from('classes')
+        .select('id, class_name, subject')
+        .eq('class_code', inputCode)
+        .single();
+
+    if (classError || !classData) {
+        return alert("Invalid class code. Please confirm with your teacher.");
+    }
+
+    // Enroll student
+    const { error: enrollError } = await supabase
+        .from('class_enrollments')
+        .insert([{ student_id: currentUser.id, class_id: classData.id }]);
+
+    if (enrollError) {
+        if (enrollError.code === '23505') {
+            alert("You are already enrolled in this class.");
+        } else {
+            alert("Error joining class: " + enrollError.message);
+        }
+    } else {
+        alert(`Successfully joined ${classData.class_name} (${classData.subject})!`);
+        e.target.reset();
+        loadExams('student');
+    }
+});
+
+// ==========================================
+// EXAM FETCHING & RENDER HANDLERS
+// ==========================================
+
+// Fetch and Render Exams Filtered by User Role & Enrollments
+async function loadExams(role = 'student') {
     const studentContainer = document.getElementById('exams-list');
     const teacherContainer = document.getElementById('teacher-exams-list');
 
-    const containers = [studentContainer, teacherContainer].filter(Boolean);
-    if (containers.length === 0) return;
+    if (role === 'teacher' && teacherContainer) {
+        teacherContainer.innerHTML = '<p class="text-gray-500 py-4">Loading exams...</p>';
 
-    containers.forEach(c => c.innerHTML = '<p class="text-gray-500 py-4">Loading exams...</p>');
+        const { data: exams, error } = await supabase
+            .from('exams')
+            .select('*')
+            .eq('created_by', currentUser.id)
+            .order('created_at', { ascending: false });
 
-    const { data: exams, error } = await supabase
-        .from('exams')
-        .select('*')
-        .order('created_at', { ascending: false });
+        if (error) {
+            teacherContainer.innerHTML = `<p class="text-red-500 py-4">Failed to load exams: ${error.message}</p>`;
+            return;
+        }
 
-    if (error) {
-        console.error("Error loading exams:", error);
-        containers.forEach(c => c.innerHTML = `<p class="text-red-500 py-4">Failed to load exams: ${error.message}</p>`);
-        return;
+        renderExams(exams, teacherContainer);
+    } 
+    else if (role === 'student' && studentContainer) {
+        studentContainer.innerHTML = '<p class="text-gray-500 py-4">Loading exams...</p>';
+
+        // 1. Fetch student enrolled classes
+        const { data: enrollments, error: enrollError } = await supabase
+            .from('class_enrollments')
+            .select('class_id, classes(class_name)')
+            .eq('student_id', currentUser.id);
+
+        if (enrollError) {
+            studentContainer.innerHTML = `<p class="text-red-500 py-4">Error fetching enrollments: ${enrollError.message}</p>`;
+            return;
+        }
+
+        if (!enrollments || enrollments.length === 0) {
+            studentContainer.innerHTML = '<p class="text-gray-500 py-4">You have not joined any classes yet. Enter a class code above to view exams from your teacher.</p>';
+            return;
+        }
+
+        const enrolledClassNames = enrollments.map(e => e.classes?.class_name).filter(Boolean);
+
+        // 2. Fetch exams matching enrolled class names
+        const { data: exams, error } = await supabase
+            .from('exams')
+            .select('*')
+            .in('class_name', enrolledClassNames)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            studentContainer.innerHTML = `<p class="text-red-500 py-4">Failed to load exams: ${error.message}</p>`;
+            return;
+        }
+
+        renderExams(exams, studentContainer);
     }
+}
 
+// Render HTML Exam Cards
+function renderExams(exams, container) {
     if (!exams || exams.length === 0) {
-        containers.forEach(c => c.innerHTML = '<p class="text-gray-500 py-4">No examinations available at the moment.</p>');
+        container.innerHTML = '<p class="text-gray-500 py-4">No examinations available at the moment.</p>';
         return;
     }
 
-    const htmlContent = exams.map(exam => `
+    container.innerHTML = exams.map(exam => `
         <div class="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm hover:shadow-md transition flex justify-between items-center">
             <div>
                 <h4 class="font-bold text-lg text-blue-900">${exam.title} (${exam.subject})</h4>
@@ -146,13 +275,10 @@ async function loadExams() {
             </button>
         </div>
     `).join('');
-
-    containers.forEach(c => c.innerHTML = htmlContent);
 }
 
-// Download/View PDF Handler (Generates Signed URL to prevent 404 access errors)
+// Download/View PDF Handler
 window.downloadExamPDF = async function(filePath) {
-    // Generates a 60-second temporary secure download URL
     const { data, error } = await supabase.storage
         .from('exam-papers')
         .createSignedUrl(filePath, 60);
@@ -206,6 +332,6 @@ document.getElementById('create-exam-form')?.addEventListener('submit', async (e
     } else {
         alert('Exam published successfully!');
         e.target.reset();
-        loadExams(); // Refresh list immediately after posting
+        loadExams('teacher');
     }
 });
