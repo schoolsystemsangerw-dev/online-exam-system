@@ -72,28 +72,23 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     }
 
     if (authData.user) {
-        // 2. Safe profile sync attempt
-        try {
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .upsert([{
-                    id: authData.user.id,
-                    full_name: fullName,
-                    role: role
-                }], { onConflict: 'id' });
+        // 2. Safe client-side insert into profiles table
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert([{
+                id: authData.user.id,
+                full_name: fullName,
+                role: role
+            }], { onConflict: 'id' });
 
-            if (profileError) {
-                console.warn("Profile table write warning (will fallback on session load):", profileError.message);
-            }
-        } catch (err) {
-            console.warn("Handled profile sync exception:", err);
+        if (profileError) {
+            console.warn("Profile table warning (trigger may have handled this):", profileError.message);
         }
 
         alert("Account created successfully!");
         handleUserLogin(authData.user);
     }
 });
-
 // Login Handler
 document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
