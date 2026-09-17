@@ -1,12 +1,26 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-// Your Supabase credentials
 const SUPABASE_URL = 'https://xowfbzcbeiwuffvlwhmn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_h7p-pbw5WiGhvk-aKSyj5A_yMYB35yb';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
+
+// Tab Switch Logic
+document.getElementById('tab-login')?.addEventListener('click', () => {
+    document.getElementById('login-form').classList.remove('hidden');
+    document.getElementById('signup-form').classList.add('hidden');
+    document.getElementById('tab-login').className = "w-1/2 py-2 text-center font-bold border-b-2 border-blue-600 text-blue-600";
+    document.getElementById('tab-signup').className = "w-1/2 py-2 text-center font-bold text-gray-500 border-b-2 border-transparent";
+});
+
+document.getElementById('tab-signup')?.addEventListener('click', () => {
+    document.getElementById('signup-form').classList.remove('hidden');
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('tab-signup').className = "w-1/2 py-2 text-center font-bold border-b-2 border-blue-600 text-blue-600";
+    document.getElementById('tab-login').className = "w-1/2 py-2 text-center font-bold text-gray-500 border-b-2 border-transparent";
+});
 
 // Initialize Session Check
 window.addEventListener('DOMContentLoaded', async () => {
@@ -16,7 +30,43 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Login Form Submit
+// Register New Teacher or Student
+document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fullName = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const role = document.getElementById('signup-role').value;
+
+    // 1. Sign up user in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: { full_name: fullName, role: role }
+        }
+    });
+
+    if (authError) return alert("Registration Error: " + authError.message);
+
+    if (authData.user) {
+        // 2. Add Profile Record
+        const { error: profileError } = await supabase.from('profiles').insert([{
+            id: authData.user.id,
+            full_name: fullName,
+            role: role
+        }]);
+
+        if (profileError) {
+            alert("Profile Creation Error: " + profileError.message);
+        } else {
+            alert("Account created successfully! Logging you in...");
+            handleUserLogin(authData.user);
+        }
+    }
+});
+
+// Login Handler
 document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
@@ -30,10 +80,15 @@ document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     }
 });
 
+// Logout Handler
+document.getElementById('logout-btn')?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+});
+
 async function handleUserLogin(user) {
     currentUser = user;
     
-    // Fetch Role from Profiles
     const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -41,11 +96,12 @@ async function handleUserLogin(user) {
         .single();
 
     if (error) {
-        alert("Error fetching profile: " + error.message);
+        alert("Profile fetch error: " + error.message);
         return;
     }
 
     document.getElementById('auth-status').innerText = `${profile.full_name} (${profile.role.toUpperCase()})`;
+    document.getElementById('logout-btn').classList.remove('hidden');
     document.getElementById('auth-section').classList.add('hidden');
 
     if (profile.role === 'teacher') {
@@ -54,42 +110,3 @@ async function handleUserLogin(user) {
         document.getElementById('student-dashboard').classList.remove('hidden');
     }
 }
-
-// Teacher: Upload Exam File & Publish
-document.getElementById('create-exam-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const title = document.getElementById('exam-title').value;
-    const subject = document.getElementById('exam-subject').value;
-    const className = document.getElementById('exam-class').value;
-    const totalMarks = document.getElementById('exam-marks').value;
-    const deadline = document.getElementById('exam-deadline').value;
-    const file = document.getElementById('exam-file').files[0];
-
-    const filePath = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-
-    // 1. Upload to Storage
-    const { data: storageData, error: storageError } = await supabase.storage
-        .from('exam-papers')
-        .upload(filePath, file);
-
-    if (storageError) return alert('Storage upload error: ' + storageError.message);
-
-    // 2. Insert to Database Table
-    const { error: dbError } = await supabase.from('exams').insert([{
-        title,
-        subject,
-        class_name: className,
-        total_marks: totalMarks,
-        deadline: new Date(deadline).toISOString(),
-        file_path: storageData.path,
-        created_by: currentUser.id
-    }]);
-
-    if (dbError) {
-        alert('Database error: ' + dbError.message);
-    } else {
-        alert('Exam published successfully!');
-        e.target.reset();
-    }
-});
