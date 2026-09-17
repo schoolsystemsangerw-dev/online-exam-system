@@ -38,7 +38,7 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     const password = document.getElementById('signup-password').value;
     const role = document.getElementById('signup-role').value;
 
-    // 1. Sign up user in Supabase Auth
+    // Sign up user with user_metadata (Database trigger handles profile row creation)
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -47,22 +47,13 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
         }
     });
 
-    if (authError) return alert("Registration Error: " + authError.message);
+    if (authError) {
+        return alert("Registration Error: " + authError.message);
+    }
 
     if (authData.user) {
-        // 2. Add Profile Record
-        const { error: profileError } = await supabase.from('profiles').insert([{
-            id: authData.user.id,
-            full_name: fullName,
-            role: role
-        }]);
-
-        if (profileError) {
-            alert("Profile Creation Error: " + profileError.message);
-        } else {
-            alert("Account created successfully! Logging you in...");
-            handleUserLogin(authData.user);
-        }
+        alert("Account created successfully! Logging you in...");
+        handleUserLogin(authData.user);
     }
 });
 
@@ -86,6 +77,7 @@ document.getElementById('logout-btn')?.addEventListener('click', async () => {
     window.location.reload();
 });
 
+// User Session and Dashboard Navigation
 async function handleUserLogin(user) {
     currentUser = user;
     
@@ -110,3 +102,44 @@ async function handleUserLogin(user) {
         document.getElementById('student-dashboard').classList.remove('hidden');
     }
 }
+
+// Teacher Exam Creation Handler
+document.getElementById('create-exam-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('exam-title').value;
+    const subject = document.getElementById('exam-subject').value;
+    const className = document.getElementById('exam-class').value;
+    const totalMarks = document.getElementById('exam-marks').value;
+    const deadline = document.getElementById('exam-deadline').value;
+    const file = document.getElementById('exam-file').files[0];
+
+    const filePath = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+
+    // 1. Upload file to exam-papers storage bucket
+    const { data: storageData, error: storageError } = await supabase.storage
+        .from('exam-papers')
+        .upload(filePath, file);
+
+    if (storageError) {
+        return alert('Storage upload error: ' + storageError.message);
+    }
+
+    // 2. Insert metadata record into exams table
+    const { error: dbError } = await supabase.from('exams').insert([{
+        title,
+        subject,
+        class_name: className,
+        total_marks: totalMarks,
+        deadline: new Date(deadline).toISOString(),
+        file_path: storageData.path,
+        created_by: currentUser.id
+    }]);
+
+    if (dbError) {
+        alert('Database error: ' + dbError.message);
+    } else {
+        alert('Exam published successfully!');
+        e.target.reset();
+    }
+});
