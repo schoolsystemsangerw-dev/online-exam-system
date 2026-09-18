@@ -179,19 +179,20 @@ async function loadStudentTeachers(studentId) {
     // Fetch class enrollments and joined profiles
     const { data, error } = await supabase
         .from('class_enrollments')
-        .select(`
+       .select(`
             id,
             classes (
                 id,
-                title,
+                class_name,
                 subject,
                 profiles:teacher_id (
                     id,
-                    name,
+                    full_name,
                     phone,
                     address
                 )
             )
+        `)
         `)
         .eq('student_id', studentId);
 
@@ -223,7 +224,7 @@ async function loadStudentTeachers(studentId) {
         <div class="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl flex flex-col gap-2">
             <div class="flex items-center gap-2">
                 <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
-                <h3 class="font-bold text-slate-900 text-base">${escapeHtml(teacher.name || 'Teacher')}</h3>
+               <h3 class="font-bold text-slate-900 text-base">${escapeHtml(teacher.full_name || 'Teacher')}</h3>
             </div>
             <div class="text-xs text-slate-600 space-y-1.5 pl-6">
                 <p class="flex items-center gap-2">
