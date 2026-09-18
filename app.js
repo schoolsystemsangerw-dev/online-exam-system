@@ -638,15 +638,19 @@ async function loadTeacherSubmissions() {
     const container = document.getElementById('teacher-submissions-list');
     if (!container) return;
 
-    // 1. Get currently logged-in teacher
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // 2. Fetch ONLY submissions for exams created by this teacher
+    // Fetch ONLY submissions for exams created by this teacher
     const { data: submissions, error } = await supabase
         .from('submissions')
         .select(`
             *,
+            exams!inner(title, total_marks, created_by),
+            profiles(full_name)
+        `)
+        .eq('exams.created_by', user.id)
+        .order('submitted_at', { ascending: false });
             exams!inner(title, total_marks, teacher_id),
             profiles(full_name)
         `)
