@@ -160,76 +160,83 @@ async function handleUserLogin(user) {
         loadTeacherClassesSelect();
         loadTeacherClassesAndStudents();
         loadTeacherSubmissions();
-    } else {
-        document.getElementById('student-dashboard')?.classList.remove('hidden');
-        document.getElementById('teacher-dashboard')?.classList.add('hidden');
-        loadStudentResults();
-        loadTeacherDirectory();
-    }
+   } else {
+      document.getElementById('student-dashboard')?.classList.remove('hidden');
+      document.getElementById('teacher-dashboard')?.classList.add('hidden');
+      loadStudentResults();
+      loadStudentTeachers(user.id); // <--- Pass user.id here
+  }
 
     loadExams(role);
 }
 
 // Fetch enrolled teacher details for students
-async function loadTeacherDirectory() {
+// Fetch enrolled teacher details for students
+async function loadStudentTeachers(studentId) {
     const container = document.getElementById('teachers-list');
     if (!container) return;
 
-    container.innerHTML = '<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">Loading teachers directory...</p>';
-
-    // Fetch classes the student is enrolled in along with teacher profiles
-    const { data: enrollments, error } = await supabase
+    // Fetch class enrollments and joined profiles
+    const { data, error } = await supabase
         .from('class_enrollments')
         .select(`
-            class_id,
+            id,
             classes (
-                class_name,
+                id,
+                title,
                 subject,
-                class_code,
                 profiles:teacher_id (
-                    full_name,
-                    phone_number,
-                    physical_address
+                    id,
+                    name,
+                    phone,
+                    address
                 )
             )
         `)
-        .eq('student_id', currentUser.id);
+        .eq('student_id', studentId);
 
     if (error) {
-        container.innerHTML = `<p class="text-rose-600 bg-rose-50 p-4 rounded-xl border border-rose-200 text-sm">Error loading teachers: ${escapeHtml(error.message)}</p>`;
+        container.innerHTML = `<div class="p-4 bg-rose-50 text-rose-700 rounded-xl text-sm">Error loading teachers: ${escapeHtml(error.message)}</div>`;
         return;
     }
 
-    if (!enrollments || enrollments.length === 0) {
-        container.innerHTML = '<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">No enrolled classes or teacher contact details found.</p>';
+    if (!data || data.length === 0) {
+        container.innerHTML = `<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl col-span-2">Join a class above using a valid class code to view your teacher's contact details.</p>`;
         return;
     }
 
-    container.innerHTML = enrollments.map(item => {
-        const c = item.classes;
-        const teacher = c?.profiles || {};
-        return `
-            <div class="border border-slate-200/80 p-4 rounded-2xl bg-white shadow-sm space-y-2">
-                <div class="flex items-center justify-between">
-                    <h4 class="font-bold text-slate-900 text-base flex items-center gap-2">
-                        <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
-                        ${escapeHtml(teacher.full_name || 'Teacher')}
-                    </h4>
-                    <span class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-indigo-100">
-                        ${escapeHtml(c?.class_name || '')} (${escapeHtml(c?.subject || '')})
-                    </span>
-                </div>
-                <p class="text-xs text-slate-600 flex items-center gap-1.5">
+    // Map unique teachers
+    const teachersMap = new Map();
+    data.forEach(item => {
+        const teacher = item.classes?.profiles;
+        if (teacher && !teachersMap.has(teacher.id)) {
+            teachersMap.set(teacher.id, teacher);
+        }
+    });
+
+    if (teachersMap.size === 0) {
+        container.innerHTML = `<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl col-span-2">No teacher information found for joined classes.</p>`;
+        return;
+    }
+
+    container.innerHTML = Array.from(teachersMap.values()).map(teacher => `
+        <div class="p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+                <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+                <h3 class="font-bold text-slate-900 text-base">${escapeHtml(teacher.name || 'Teacher')}</h3>
+            </div>
+            <div class="text-xs text-slate-600 space-y-1.5 pl-6">
+                <p class="flex items-center gap-2">
                     <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400"></i>
-                    <span><strong>Phone:</strong> ${escapeHtml(teacher.phone_number || 'Not provided')}</span>
+                    <span><strong>Phone:</strong> ${escapeHtml(teacher.phone || 'N/A')}</span>
                 </p>
-                <p class="text-xs text-slate-600 flex items-center gap-1.5">
+                <p class="flex items-center gap-2">
                     <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
-                    <span><strong>Address:</strong> ${escapeHtml(teacher.physical_address || 'Not provided')}</span>
+                    <span><strong>Location:</strong> ${escapeHtml(teacher.address || 'N/A')}</span>
                 </p>
             </div>
-        `;
-    }).join('');
+        </div>
+    `).join('');
 
     refreshIcons();
 }
