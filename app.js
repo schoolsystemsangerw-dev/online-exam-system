@@ -53,16 +53,15 @@ window.addEventListener('DOMContentLoaded', async () => {
 // Register New Teacher or Student
 document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const fullName = document.getElementById('signup-name').value;
-    const email = document.getElementById('signup-email').value;
-    const password = document.getElementById('signup-password').value;
-    const role = document.getElementById('signup-role').value;
+    const fullName = document.getElementById('signup-name')?.value || '';
+    const email = document.getElementById('signup-email')?.value || '';
+    const password = document.getElementById('signup-password')?.value || '';
+    const role = document.getElementById('signup-role')?.value || 'student';
     
-    // Read phone and address fields
     const phone = document.getElementById('signup-phone')?.value || '';
     const address = document.getElementById('signup-address')?.value || '';
 
-    // 1. Create auth account with full metadata
+    // 1. Create auth account with metadata
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -70,8 +69,8 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
             data: { 
                 full_name: fullName, 
                 role: role,
-                phone: phone,
-                address: address
+                phone_number: phone,
+                physical_address: address
             }
         }
     });
@@ -79,15 +78,15 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     if (authError) {
         alert("Registration Error: " + authError.message);
     } else if (authData.user) {
-        // 2. Insert into profiles table with phone and address
+        // 2. Insert into profiles table with matching schema columns
         const { error: profileError } = await supabase
             .from('profiles')
             .upsert([{
                 id: authData.user.id,
                 full_name: fullName,
                 role: role,
-                phone: phone,
-                address: address
+                phone_number: phone,
+                physical_address: address
             }], { onConflict: 'id' });
 
         if (profileError) {
@@ -102,8 +101,8 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
 // Login Handler
 document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const email = document.getElementById('email')?.value || '';
+    const password = document.getElementById('password')?.value || '';
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
@@ -149,17 +148,21 @@ async function handleUserLogin(user) {
     const fullName = profile?.full_name || user.user_metadata?.full_name || 'User';
     const role = profile?.role || user.user_metadata?.role || 'student';
 
-    document.getElementById('auth-status').innerText = `${fullName} (${role.toUpperCase()})`;
+    const authStatus = document.getElementById('auth-status');
+    if (authStatus) authStatus.innerText = `${fullName} (${role.toUpperCase()})`;
+    
     document.getElementById('logout-btn')?.classList.remove('hidden');
     document.getElementById('auth-section')?.classList.add('hidden');
 
     if (role === 'teacher') {
         document.getElementById('teacher-dashboard')?.classList.remove('hidden');
+        document.getElementById('student-dashboard')?.classList.add('hidden');
         loadTeacherClassesSelect();
         loadTeacherClassesAndStudents();
         loadTeacherSubmissions();
     } else {
         document.getElementById('student-dashboard')?.classList.remove('hidden');
+        document.getElementById('teacher-dashboard')?.classList.add('hidden');
         loadStudentResults();
         loadTeacherDirectory();
     }
@@ -167,44 +170,66 @@ async function handleUserLogin(user) {
     loadExams(role);
 }
 
-// Fetch and display teacher details for students
+// Fetch enrolled teacher details for students
 async function loadTeacherDirectory() {
     const container = document.getElementById('teachers-list');
     if (!container) return;
 
     container.innerHTML = '<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">Loading teachers directory...</p>';
 
-    const { data: teachers, error } = await supabase
-        .from('profiles')
-        .select('full_name, phone, address')
-        .eq('role', 'teacher');
+    // Fetch classes the student is enrolled in along with teacher profiles
+    const { data: enrollments, error } = await supabase
+        .from('class_enrollments')
+        .select(`
+            class_id,
+            classes (
+                class_name,
+                subject,
+                class_code,
+                profiles:teacher_id (
+                    full_name,
+                    phone_number,
+                    physical_address
+                )
+            )
+        `)
+        .eq('student_id', currentUser.id);
 
     if (error) {
         container.innerHTML = `<p class="text-rose-600 bg-rose-50 p-4 rounded-xl border border-rose-200 text-sm">Error loading teachers: ${escapeHtml(error.message)}</p>`;
         return;
     }
 
-    if (!teachers || teachers.length === 0) {
-        container.innerHTML = '<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">No teacher contact details available.</p>';
+    if (!enrollments || enrollments.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">No enrolled classes or teacher contact details found.</p>';
         return;
     }
 
-    container.innerHTML = teachers.map(t => `
-        <div class="border border-slate-200/80 p-4 rounded-2xl bg-white shadow-sm space-y-1">
-            <h4 class="font-bold text-slate-900 text-base flex items-center gap-2">
-                <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
-                ${escapeHtml(t.full_name || 'Teacher')}
-            </h4>
-            <p class="text-xs text-slate-600 flex items-center gap-1.5">
-                <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400"></i>
-                <span><strong>Phone:</strong> ${escapeHtml(t.phone || 'Not provided')}</span>
-            </p>
-            <p class="text-xs text-slate-600 flex items-center gap-1.5">
-                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
-                <span><strong>Address:</strong> ${escapeHtml(t.address || 'Not provided')}</span>
-            </p>
-        </div>
-    `).join('');
+    container.innerHTML = enrollments.map(item => {
+        const c = item.classes;
+        const teacher = c?.profiles || {};
+        return `
+            <div class="border border-slate-200/80 p-4 rounded-2xl bg-white shadow-sm space-y-2">
+                <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+                        ${escapeHtml(teacher.full_name || 'Teacher')}
+                    </h4>
+                    <span class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-indigo-100">
+                        ${escapeHtml(c?.class_name || '')} (${escapeHtml(c?.subject || '')})
+                    </span>
+                </div>
+                <p class="text-xs text-slate-600 flex items-center gap-1.5">
+                    <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <span><strong>Phone:</strong> ${escapeHtml(teacher.phone_number || 'Not provided')}</span>
+                </p>
+                <p class="text-xs text-slate-600 flex items-center gap-1.5">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <span><strong>Address:</strong> ${escapeHtml(teacher.physical_address || 'Not provided')}</span>
+                </p>
+            </div>
+        `;
+    }).join('');
 
     refreshIcons();
 }
@@ -216,9 +241,9 @@ async function loadTeacherDirectory() {
 // 1. Teacher Creates a New Class
 document.getElementById('create-class-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const className = document.getElementById('class-title').value;
-    const subject = document.getElementById('class-subject').value;
-    const classCode = document.getElementById('class-code').value.toUpperCase().trim();
+    const className = document.getElementById('class-title')?.value || '';
+    const subject = document.getElementById('class-subject')?.value || '';
+    const classCode = (document.getElementById('class-code')?.value || '').toUpperCase().trim();
 
     const { error } = await supabase.from('classes').insert([{
         class_name: className,
@@ -237,7 +262,7 @@ document.getElementById('create-class-form')?.addEventListener('submit', async (
     }
 });
 
-// 2. Load Teacher Classes into Exam Creation Form Drop-down (<select>)
+// 2. Load Teacher Classes into Drop-down (<select>)
 async function loadTeacherClassesSelect() {
     const classSelect = document.getElementById('exam-class');
     if (!classSelect || !currentUser) return;
@@ -268,7 +293,7 @@ async function loadTeacherClassesSelect() {
     });
 }
 
-// 3. Load Teacher's Created Classes and Enrolled Students Card Section
+// 3. Load Teacher's Created Classes and Enrolled Students
 window.loadTeacherClassesAndStudents = async function() {
     const container = document.getElementById('teacher-classes-cards');
     if (!container || !currentUser) return;
@@ -287,7 +312,7 @@ window.loadTeacherClassesAndStudents = async function() {
     }
 
     if (!classes || classes.length === 0) {
-        container.innerHTML = '<p class="text-slate-500 py-6 text-center italic border border-dashed border-slate-200 rounded-xl col-span-2">You have not created any class codes yet. Create a class code using the form above.</p>';
+        container.innerHTML = '<p class="text-slate-500 py-6 text-center italic border border-dashed border-slate-200 rounded-xl col-span-2">You have not created any class codes yet.</p>';
         return;
     }
 
@@ -363,7 +388,7 @@ window.loadTeacherClassesAndStudents = async function() {
 // 4. Student Joins Class Using Join Code
 document.getElementById('join-class-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const inputCode = document.getElementById('join-code').value.toUpperCase().trim();
+    const inputCode = (document.getElementById('join-code')?.value || '').toUpperCase().trim();
 
     const { data: classData, error: classError } = await supabase
         .from('classes')
@@ -389,6 +414,7 @@ document.getElementById('join-class-form')?.addEventListener('submit', async (e)
         alert(`Successfully joined ${classData.class_name} (${classData.subject})!`);
         e.target.reset();
         loadExams('student');
+        loadTeacherDirectory();
     }
 });
 
@@ -400,12 +426,12 @@ document.getElementById('join-class-form')?.addEventListener('submit', async (e)
 document.getElementById('create-exam-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const title = document.getElementById('exam-title').value;
-    const subject = document.getElementById('exam-subject').value;
-    const className = document.getElementById('exam-class').value;
-    const totalMarks = document.getElementById('exam-marks').value;
-    const deadline = document.getElementById('exam-deadline').value;
-    const file = document.getElementById('exam-file').files[0];
+    const title = document.getElementById('exam-title')?.value || '';
+    const subject = document.getElementById('exam-subject')?.value || '';
+    const className = document.getElementById('exam-class')?.value || '';
+    const totalMarks = document.getElementById('exam-marks')?.value || '';
+    const deadline = document.getElementById('exam-deadline')?.value || '';
+    const file = document.getElementById('exam-file')?.files[0];
 
     if (!className) return alert("Please select a target class.");
     if (!file) return alert("Please select a PDF file to upload.");
@@ -439,7 +465,7 @@ document.getElementById('create-exam-form')?.addEventListener('submit', async (e
     }
 });
 
-// Fetch and Render Exams Filtered by User Role & Enrollments
+// Fetch and Render Exams Filtered by User Role
 async function loadExams(role = 'student') {
     const studentContainer = document.getElementById('exams-list');
     const teacherContainer = document.getElementById('teacher-exams-list');
@@ -658,8 +684,8 @@ async function loadTeacherSubmissions() {
 
 // Teacher Saves Marks and Feedback
 window.submitStudentGrade = async function(submissionId) {
-    const marks = document.getElementById(`marks-${submissionId}`).value;
-    const feedback = document.getElementById(`feedback-${submissionId}`).value;
+    const marks = document.getElementById(`marks-${submissionId}`)?.value || '';
+    const feedback = document.getElementById(`feedback-${submissionId}`)?.value || '';
 
     if (marks === "") return alert("Please enter marks before saving.");
 
