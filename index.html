@@ -24,28 +24,31 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 font-sans flex flex-col justify-between antialiased">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans flex flex-col justify-between antialiased selection:bg-indigo-500 selection:text-white">
 
     <div>
         <!-- TOP ANNOUNCEMENT BANNER -->
-        <div class="bg-amber-400 text-slate-900 font-semibold text-sm py-2.5 px-4 shadow-inner overflow-hidden border-b border-amber-500">
+        <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 text-slate-950 font-semibold text-xs sm:text-sm py-2 px-4 shadow-sm overflow-hidden border-b border-amber-500/50">
             <div class="animate-marquee">
                 📢 Welcome to the Online Examination Management Portal! Teachers can publish exams and grade submissions. Students can download exam papers, submit completed work, and view performance results. 🚀
             </div>
         </div>
 
         <!-- HEADER NAVIGATION -->
-        <header class="bg-indigo-700 text-white shadow-lg border-b border-indigo-800 sticky top-0 z-50">
+        <header class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-900 text-white shadow-xl border-b border-indigo-700/50 sticky top-0 z-50 backdrop-blur-md">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+                    <div class="bg-indigo-600/40 p-2.5 rounded-xl border border-indigo-400/30 shadow-inner">
                         <i data-lucide="graduation-cap" class="w-6 h-6 text-indigo-200"></i>
                     </div>
-                    <h1 class="text-xl font-bold tracking-tight text-white">Online Exam Portal</h1>
+                    <div>
+                        <h1 class="text-xl font-black tracking-tight text-white leading-none">Online Exam Portal</h1>
+                        <p class="text-[10px] text-indigo-200/80 uppercase font-semibold tracking-wider mt-0.5">Management & Evaluation System</p>
+                    </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span id="auth-status" class="text-xs sm:text-sm font-medium bg-indigo-800/60 px-3 py-1 rounded-full border border-indigo-500/30 text-indigo-100">Not Signed In</span>
-                    <button id="logout-btn" class="hidden bg-rose-600 hover:bg-rose-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-all focus:ring-2 focus:ring-rose-400 focus:outline-none flex items-center gap-1.5">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <span id="auth-status" class="text-xs font-semibold bg-indigo-950/60 px-3.5 py-1.5 rounded-full border border-indigo-400/20 text-indigo-200 shadow-sm">Not Signed In</span>
+                    <button id="logout-btn" class="hidden bg-rose-600 hover:bg-rose-500 text-white px-4 py-1.5 rounded-xl text-xs sm:text-sm font-semibold shadow-md hover:shadow-rose-900/30 transition-all duration-200 active:scale-95 flex items-center gap-1.5">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                         <span>Logout</span>
                     </button>
@@ -54,26 +57,26 @@
         </header>
 
         <!-- MAIN CONTAINER -->
-        <main class="max-w-6xl mx-auto my-8 px-4 sm:px-6">
+        <main class="max-w-6xl mx-auto my-8 px-4 sm:px-6 space-y-8">
 
             <!-- AUTH SECTION -->
-            <section id="auth-section" class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200/80 max-w-md mx-auto">
-                <div class="flex border-b border-slate-200 mb-6">
-                    <button id="tab-login" class="w-1/2 py-3 text-center font-semibold border-b-2 border-indigo-600 text-indigo-600 transition-colors">Sign In</button>
-                    <button id="tab-signup" class="w-1/2 py-3 text-center font-semibold text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-colors">Register Account</button>
+            <section id="auth-section" class="bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-slate-200 max-w-md mx-auto">
+                <div class="flex border-b border-slate-200 mb-6 bg-slate-100/70 p-1 rounded-xl">
+                    <button id="tab-login" class="w-1/2 py-2.5 text-center text-sm font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition-all duration-200">Sign In</button>
+                    <button id="tab-signup" class="w-1/2 py-2.5 text-center text-sm font-bold text-slate-500 hover:text-slate-800 transition-all duration-200">Register Account</button>
                 </div>
 
                 <!-- LOGIN FORM -->
                 <form id="login-form" class="space-y-4">
                     <div>
-                        <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                        <input type="email" id="email" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                        <label for="email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
+                        <input type="email" id="email" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                     </div>
                     <div>
-                        <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                        <input type="password" id="password" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                        <label for="password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Password</label>
+                        <input type="password" id="password" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:bg-indigo-700 active:bg-indigo-800 transition shadow-md hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-2">
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 active:scale-[0.99] transition-all duration-200 shadow-lg shadow-indigo-600/30 mt-2">
                         Login
                     </button>
                 </form>
@@ -81,33 +84,33 @@
                 <!-- SIGNUP FORM -->
                 <form id="signup-form" class="space-y-4 hidden">
                     <div>
-                        <label for="signup-name" class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                        <input type="text" id="signup-name" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                        <label for="signup-name" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Full Name</label>
+                        <input type="text" id="signup-name" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                     </div>
                     <div>
-                        <label for="signup-email" class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                        <input type="email" id="signup-email" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                        <label for="signup-email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
+                        <input type="email" id="signup-email" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                     </div>
                     <div>
-                        <label for="signup-phone" class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-                        <input type="tel" id="signup-phone" placeholder="+250 79422 003" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                        <label for="signup-phone" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Phone Number</label>
+                        <input type="tel" id="signup-phone" placeholder="+250 79422 003" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                     </div>
                     <div>
-                        <label for="signup-address" class="block text-sm font-medium text-slate-700 mb-1">Physical Address / Location</label>
-                        <input type="text" id="signup-address" placeholder="e.g., Nyagatare, Eastern Province" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                        <label for="signup-address" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Physical Address / Location</label>
+                        <input type="text" id="signup-address" placeholder="e.g., Nyagatare, Eastern Province" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                     </div>
                     <div>
-                        <label for="signup-password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                        <input type="password" id="signup-password" required minlength="6" class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                        <label for="signup-password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Password</label>
+                        <input type="password" id="signup-password" required minlength="6" class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                     </div>
                     <div>
-                        <label for="signup-role" class="block text-sm font-medium text-slate-700 mb-1">Account Type</label>
-                        <select id="signup-role" class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none bg-white">
+                        <label for="signup-role" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Account Type</label>
+                        <select id="signup-role" class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                             <option value="teacher">Teacher</option>
                             <option value="student">Student</option>
                         </select>
                     </div>
-                    <button type="submit" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition shadow-md hover:shadow-lg focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 mt-2">
+                    <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 active:scale-[0.99] transition-all duration-200 shadow-lg shadow-emerald-600/30 mt-2">
                         Create Account
                     </button>
                 </form>
@@ -115,183 +118,246 @@
 
             <!-- TEACHER DASHBOARD -->
             <section id="teacher-dashboard" class="hidden space-y-8">
-                
+
+                <!-- STATS BANNER -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Classes</p>
+                            <h3 class="text-2xl font-black text-slate-800 mt-1">Managed</h3>
+                        </div>
+                        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+                            <i data-lucide="book-open" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Exam Status</p>
+                            <h3 class="text-2xl font-black text-slate-800 mt-1">Live Portal</h3>
+                        </div>
+                        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                            <i data-lucide="file-up" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Submissions</p>
+                            <h3 class="text-2xl font-black text-slate-800 mt-1">Ready to Grade</h3>
+                        </div>
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                            <i data-lucide="clipboard-check" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 1. CREATE CLASS SECTION -->
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200/80">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-200/80">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
                             <i data-lucide="plus-circle" class="w-6 h-6"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">Create New Class Code</h2>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Create New Class Code</h2>
+                            <p class="text-xs text-slate-500">Generate access keys for your students to join specific class units.</p>
+                        </div>
                     </div>
                     <form id="create-class-form" class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
-                            <label for="class-title" class="block text-sm font-medium text-slate-700 mb-1">Class Name</label>
-                            <input type="text" id="class-title" placeholder="e.g., Primary 5" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                            <label for="class-title" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Class Name</label>
+                            <input type="text" id="class-title" placeholder="e.g., Primary 5" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                         </div>
                         <div>
-                            <label for="class-subject" class="block text-sm font-medium text-slate-700 mb-1">Subject</label>
-                            <input type="text" id="class-subject" placeholder="e.g., English" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                            <label for="class-subject" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Subject</label>
+                            <input type="text" id="class-subject" placeholder="e.g., English" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                         </div>
                         <div>
-                            <label for="class-code" class="block text-sm font-medium text-slate-700 mb-1">Class Join Code</label>
-                            <input type="text" id="class-code" placeholder="e.g., P5-ENG-2026" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                            <label for="class-code" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Class Join Code</label>
+                            <input type="text" id="class-code" placeholder="e.g., P5-ENG-2026" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm font-black uppercase tracking-wider text-indigo-700 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                         </div>
-                        <div class="md:col-span-3 pt-2">
-                            <button type="submit" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 active:bg-indigo-800 transition shadow-md focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                                Create Class Code
+                        <div class="md:col-span-3 flex justify-end pt-2">
+                            <button type="submit" class="bg-indigo-600 text-white px-7 py-2.5 rounded-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2 text-sm">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                <span>Create Class Code</span>
                             </button>
                         </div>
                     </form>
                 </div>
 
                 <!-- 2. MY CREATED CLASSES & ENROLLED STUDENTS -->
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200/80">
-                    <div class="flex items-center justify-between mb-6">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-200/80">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
                         <div class="flex items-center gap-3">
-                            <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                            <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
                                 <i data-lucide="book-open" class="w-6 h-6"></i>
                             </div>
-                            <h2 class="text-xl font-bold text-slate-900">My Created Classes & Enrolled Students</h2>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900">My Created Classes & Enrolled Students</h2>
+                                <p class="text-xs text-slate-500">Monitor active student rosters and class codes.</p>
+                            </div>
                         </div>
-                        <button type="button" onclick="loadTeacherClassesAndStudents()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1">
+                        <button type="button" onclick="loadTeacherClassesAndStudents()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
                             <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
                             <span>Refresh List</span>
                         </button>
                     </div>
                     <div id="teacher-classes-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl col-span-2">Loading your classes...</p>
+                        <p class="text-slate-500 py-6 text-center italic border border-dashed border-slate-200 rounded-2xl col-span-2 text-sm">Loading your classes...</p>
                     </div>
                 </div>
 
                 <!-- 3. UPLOAD & PUBLISH EXAM SECTION -->
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200/80">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-200/80">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
                             <i data-lucide="file-up" class="w-6 h-6"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">Upload & Publish New Exam</h2>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Upload & Publish New Exam</h2>
+                            <p class="text-xs text-slate-500">Distribute PDF exam materials directly to enrolled class groups.</p>
+                        </div>
                     </div>
                     <form id="create-exam-form" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label for="exam-title" class="block text-sm font-medium text-slate-700 mb-1">Exam Title</label>
-                            <input type="text" id="exam-title" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                            <label for="exam-title" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Exam Title</label>
+                            <input type="text" id="exam-title" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition shadow-sm outline-none">
                         </div>
                         <div>
-                            <label for="exam-subject" class="block text-sm font-medium text-slate-700 mb-1">Subject</label>
-                            <input type="text" id="exam-subject" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                            <label for="exam-subject" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Subject</label>
+                            <input type="text" id="exam-subject" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition shadow-sm outline-none">
                         </div>
                         <div>
-                            <label for="exam-class" class="block text-sm font-medium text-slate-700 mb-1">Target Class Name</label>
-                            <select id="exam-class" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none bg-white">
+                            <label for="exam-class" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Target Class Name</label>
+                            <select id="exam-class" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition shadow-sm outline-none">
                                 <option value="">-- Select Created Class --</option>
                             </select>
                         </div>
                         <div>
-                            <label for="exam-marks" class="block text-sm font-medium text-slate-700 mb-1">Total Marks</label>
-                            <input type="number" id="exam-marks" value="100" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                            <label for="exam-marks" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Total Marks</label>
+                            <input type="number" id="exam-marks" value="100" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition shadow-sm outline-none">
                         </div>
                         <div>
-                            <label for="exam-deadline" class="block text-sm font-medium text-slate-700 mb-1">Submission Deadline</label>
-                            <input type="datetime-local" id="exam-deadline" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                            <label for="exam-deadline" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Submission Deadline</label>
+                            <input type="datetime-local" id="exam-deadline" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition shadow-sm outline-none">
                         </div>
                         <div>
-                            <label for="exam-file" class="block text-sm font-medium text-slate-700 mb-1">Upload Exam PDF</label>
-                            <input type="file" id="exam-file" accept=".pdf" required class="w-full border border-slate-300 p-1.5 rounded-xl text-sm file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition focus:outline-none">
+                            <label for="exam-file" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Upload Exam PDF</label>
+                            <input type="file" id="exam-file" accept=".pdf" required class="w-full bg-slate-50 border border-slate-300 p-2 rounded-xl text-sm file:mr-4 file:py-1.5 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 transition focus:outline-none">
                         </div>
-                        <div class="md:col-span-2 pt-2">
-                            <button type="submit" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition shadow-md focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">Publish Exam</button>
+                        <div class="md:col-span-2 flex justify-end pt-2">
+                            <button type="submit" class="bg-emerald-600 text-white px-7 py-2.5 rounded-xl font-bold hover:bg-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2 text-sm">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                <span>Publish Exam</span>
+                            </button>
                         </div>
                     </form>
                 </div>
 
                 <!-- 4. STUDENT SUBMISSIONS & MARKING PORTAL -->
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200/80">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-200/80">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl">
                             <i data-lucide="clipboard-check" class="w-6 h-6"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">Student Submissions & Marking Portal</h2>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Student Submissions & Marking Portal</h2>
+                            <p class="text-xs text-slate-500">Review student uploaded scripts and submit evaluation scores.</p>
+                        </div>
                     </div>
                     <div id="teacher-submissions-list" class="space-y-4">
-                        <p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">Loading student submissions...</p>
+                        <p class="text-slate-500 py-6 text-center italic border border-dashed border-slate-200 rounded-2xl text-sm">Loading student submissions...</p>
                     </div>
                 </div>
 
                 <!-- 5. PUBLISHED EXAMS LIST -->
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200/80">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-200/80">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="p-3 bg-purple-50 text-purple-600 rounded-2xl">
                             <i data-lucide="book-open" class="w-6 h-6"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">Published Examinations</h2>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Published Examinations</h2>
+                            <p class="text-xs text-slate-500">Active and past exam assessments published on the portal.</p>
+                        </div>
                     </div>
                     <div id="teacher-exams-list" class="space-y-4">
-                        <p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">Loading exams...</p>
+                        <p class="text-slate-500 py-6 text-center italic border border-dashed border-slate-200 rounded-2xl text-sm">Loading exams...</p>
                     </div>
                 </div>
             </section>
 
             <!-- STUDENT DASHBOARD -->
             <section id="student-dashboard" class="hidden space-y-8">
-                
+
                 <!-- 1. JOIN CLASS SECTION -->
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200/80">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-200/80">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
                             <i data-lucide="user-plus" class="w-6 h-6"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">Join a Teacher's Class</h2>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Join a Teacher's Class</h2>
+                            <p class="text-xs text-slate-500">Enter the unique join code provided by your instructor.</p>
+                        </div>
                     </div>
                     <form id="join-class-form" class="flex flex-col sm:flex-row gap-4 items-start sm:items-end max-w-2xl">
                         <div class="w-full sm:flex-1">
-                            <label for="join-code" class="block text-sm font-medium text-slate-700 mb-1">Enter Class Code</label>
-                            <input type="text" id="join-code" placeholder="Enter code given by teacher" required class="w-full border border-slate-300 px-3.5 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none">
+                            <label for="join-code" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Enter Class Code</label>
+                            <input type="text" id="join-code" placeholder="Enter code given by teacher" required class="w-full bg-slate-50 border border-slate-300 px-4 py-2.5 rounded-xl text-sm font-black uppercase tracking-wider text-indigo-700 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition shadow-sm outline-none">
                         </div>
-                        <button type="submit" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition shadow-md focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 w-full sm:w-auto">
-                            Join Class
+                        <button type="submit" class="bg-emerald-600 text-white px-7 py-2.5 rounded-xl font-bold hover:bg-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-600/20 w-full sm:w-auto text-sm flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            <span>Join Class</span>
                         </button>
                     </form>
                 </div>
 
                 <!-- 2. MY ENROLLED TEACHERS DIRECTORY -->
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200/80">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-200/80">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
                             <i data-lucide="contact" class="w-6 h-6"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">My Teachers & Contact Details</h2>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">My Teachers & Contact Details</h2>
+                            <p class="text-xs text-slate-500">Contact information for instructors of your joined classes.</p>
+                        </div>
                     </div>
                     <div id="teachers-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl col-span-2">
+                        <p class="text-slate-500 py-6 text-center italic border border-dashed border-slate-200 rounded-2xl col-span-2 text-sm">
                             Join a class above using a valid class code to view your teacher's contact details.
                         </p>
                     </div>
                 </div>
 
                 <!-- 3. STUDENT AVAILABLE EXAMS SECTION -->
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200/80">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-200/80">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="p-3 bg-amber-50 text-amber-600 rounded-2xl">
                             <i data-lucide="file-text" class="w-6 h-6"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">Available Examinations</h2>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Available Examinations</h2>
+                            <p class="text-xs text-slate-500">Download active exam papers and upload your completed responses.</p>
+                        </div>
                     </div>
                     <div id="exams-list" class="space-y-4">
-                        <p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">Loading exams...</p>
+                        <p class="text-slate-500 py-6 text-center italic border border-dashed border-slate-200 rounded-2xl text-sm">Loading exams...</p>
                     </div>
                 </div>
 
                 <!-- 4. STUDENT MARKS & PERFORMANCE RESULTS SECTION -->
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200/80">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-200/80">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
                             <i data-lucide="award" class="w-6 h-6"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-slate-900">My Exam Results & Performance</h2>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">My Exam Results & Performance</h2>
+                            <p class="text-xs text-slate-500">Review graded marks and feedback from your instructors.</p>
+                        </div>
                     </div>
                     <div id="student-results-list" class="space-y-4">
-                        <p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">Loading performance results...</p>
+                        <p class="text-slate-500 py-6 text-center italic border border-dashed border-slate-200 rounded-2xl text-sm">Loading performance results...</p>
                     </div>
                 </div>
             </section>
@@ -300,43 +366,43 @@
     </div>
 
     <!-- FOOTER SECTION -->
-    <footer class="bg-slate-900 text-white mt-16 pt-10 pb-8 border-t-4 border-indigo-600">
+    <footer class="bg-slate-950 text-white mt-16 pt-12 pb-8 border-t-4 border-indigo-600">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
-                <h3 class="text-base font-bold text-indigo-400 mb-3 tracking-wide uppercase text-xs">About The System</h3>
-                <p class="text-sm text-slate-300 leading-relaxed">
+                <h3 class="text-xs font-bold text-indigo-400 mb-3 tracking-widest uppercase">About The System</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
                     A web-based examination platform empowering teachers to easily publish exams, collect student submissions, and manage evaluation scores securely.
                 </p>
             </div>
             <div>
-                <h3 class="text-base font-bold text-indigo-400 mb-3 tracking-wide uppercase text-xs">Quick Information</h3>
-                <ul class="text-sm text-slate-300 space-y-2">
-                    <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> Safe PDF File Storage</li>
-                    <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> Real-time Exam Publishing</li>
-                    <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> Role-based Access Control</li>
+                <h3 class="text-xs font-bold text-indigo-400 mb-3 tracking-widest uppercase">Quick Information</h3>
+                <ul class="text-xs text-slate-400 space-y-2 font-medium">
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i> Safe PDF File Storage</li>
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i> Real-time Exam Publishing</li>
+                    <li class="flex items-center gap-2"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i> Role-based Access Control</li>
                 </ul>
             </div>
             <div>
-                <h3 class="text-base font-bold text-indigo-400 mb-3 tracking-wide uppercase text-xs">Technical Support</h3>
-                <ul class="text-sm text-slate-300 space-y-2">
+                <h3 class="text-xs font-bold text-indigo-400 mb-3 tracking-widest uppercase">Technical Support</h3>
+                <ul class="text-xs text-slate-400 space-y-2 font-medium">
                     <li class="flex items-center gap-2">
-                        <i data-lucide="phone" class="w-4 h-4 text-indigo-400"></i>
+                        <i data-lucide="phone" class="w-3.5 h-3.5 text-indigo-400"></i>
                         <span>+250 794226 003</span>
                     </li>
                     <li class="flex items-center gap-2">
-                        <i data-lucide="map-pin" class="w-4 h-4 text-indigo-400"></i>
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-indigo-400"></i>
                         <span>Nyagatare District, Rwanda</span>
                     </li>
                     <li class="flex items-center gap-2">
-                        <i data-lucide="mail" class="w-4 h-4 text-indigo-400"></i>
+                        <i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-400"></i>
                         <a href="mailto:schoolsystems.ange.rw@gmail.com" class="hover:underline text-indigo-300">schoolsystems.ange.rw@gmail.com</a>
                     </li>
                 </ul>
             </div>
         </div>
         
-        <div class="text-center text-xs text-slate-400 border-t border-slate-800 pt-6">
-            Created and designed by <a href="mailto:schoolsystems.ange.rw@gmail.com" class="text-indigo-400 hover:text-indigo-300 transition underline underline-offset-2">schoolsystems.ange.rw@gmail.com</a>
+        <div class="text-center text-[11px] text-slate-500 border-t border-slate-900 pt-6">
+            Created and designed by <a href="mailto:schoolsystems.ange.rw@gmail.com" class="text-indigo-400 hover:text-indigo-300 transition underline underline-offset-2 font-medium">schoolsystems.ange.rw@gmail.com</a>
         </div>
     </footer>
 
