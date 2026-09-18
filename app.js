@@ -84,6 +84,7 @@ address: address
             .upsert([{
           id: authData.user.id,
           full_name: fullName,
+          email: email,
           role: role,
           phone: phone,
           address: address
