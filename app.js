@@ -29,15 +29,15 @@ function refreshIcons() {
 // TAB SWITCH & AUTH UI LOGIC
 // ==========================================
 document.getElementById('tab-login')?.addEventListener('click', () => {
-    document.getElementById('login-form').classList.remove('hidden');
-    document.getElementById('signup-form').classList.add('hidden');
+    document.getElementById('login-form')?.classList.remove('hidden');
+    document.getElementById('signup-form')?.classList.add('hidden');
     document.getElementById('tab-login').className = "w-1/2 py-3 text-center font-semibold border-b-2 border-indigo-600 text-indigo-600 transition-colors";
     document.getElementById('tab-signup').className = "w-1/2 py-3 text-center font-semibold text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-colors";
 });
 
 document.getElementById('tab-signup')?.addEventListener('click', () => {
-    document.getElementById('signup-form').classList.remove('hidden');
-    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('signup-form')?.classList.remove('hidden');
+    document.getElementById('login-form')?.classList.add('hidden');
     document.getElementById('tab-signup').className = "w-1/2 py-3 text-center font-semibold border-b-2 border-indigo-600 text-indigo-600 transition-colors";
     document.getElementById('tab-login').className = "w-1/2 py-3 text-center font-semibold text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-colors";
 });
@@ -77,10 +77,8 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
     });
 
     if (authError) {
-        return alert("Registration Error: " + authError.message);
-    }
-
-    if (authData.user) {
+        alert("Registration Error: " + authError.message);
+    } else if (authData.user) {
         // 2. Insert into profiles table with phone and address
         const { error: profileError } = await supabase
             .from('profiles')
@@ -96,40 +94,6 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
             console.warn("Profile table error:", profileError.message);
         }
 
-        alert("Account created successfully!");
-        handleUserLogin(authData.user);
-    }
-});
-
-    // 1. Create auth account passing user metadata
- const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-            data: { full_name: fullName, role: role }
-        }
-    });
-
-    if (authError) {
-        alert("Registration Error: " + authError.message);
-    } else if (authData.user) {
-        // Safe client-side insert into profiles table
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert([{
-                id: authData.user.id,
-                full_name: fullName,
-                role: role
-            }], { onConflict: 'id' });
-
-        if (profileError) {
-            console.warn("Profile table warning (trigger may have handled this):", profileError.message);
-        }
-
-        alert("Account created successfully!");
-        handleUserLogin(authData.user);
-    }
-});
         alert("Account created successfully!");
         handleUserLogin(authData.user);
     }
@@ -197,9 +161,52 @@ async function handleUserLogin(user) {
     } else {
         document.getElementById('student-dashboard')?.classList.remove('hidden');
         loadStudentResults();
+        loadTeacherDirectory();
     }
 
     loadExams(role);
+}
+
+// Fetch and display teacher details for students
+async function loadTeacherDirectory() {
+    const container = document.getElementById('teachers-list');
+    if (!container) return;
+
+    container.innerHTML = '<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">Loading teachers directory...</p>';
+
+    const { data: teachers, error } = await supabase
+        .from('profiles')
+        .select('full_name, phone, address')
+        .eq('role', 'teacher');
+
+    if (error) {
+        container.innerHTML = `<p class="text-rose-600 bg-rose-50 p-4 rounded-xl border border-rose-200 text-sm">Error loading teachers: ${escapeHtml(error.message)}</p>`;
+        return;
+    }
+
+    if (!teachers || teachers.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl">No teacher contact details available.</p>';
+        return;
+    }
+
+    container.innerHTML = teachers.map(t => `
+        <div class="border border-slate-200/80 p-4 rounded-2xl bg-white shadow-sm space-y-1">
+            <h4 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+                ${escapeHtml(t.full_name || 'Teacher')}
+            </h4>
+            <p class="text-xs text-slate-600 flex items-center gap-1.5">
+                <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span><strong>Phone:</strong> ${escapeHtml(t.phone || 'Not provided')}</span>
+            </p>
+            <p class="text-xs text-slate-600 flex items-center gap-1.5">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span><strong>Address:</strong> ${escapeHtml(t.address || 'Not provided')}</span>
+            </p>
+        </div>
+    `).join('');
+
+    refreshIcons();
 }
 
 // ==========================================
@@ -268,7 +275,6 @@ window.loadTeacherClassesAndStudents = async function() {
 
     container.innerHTML = '<p class="text-slate-500 py-4 text-center italic border border-dashed border-slate-200 rounded-xl col-span-2">Loading classes and enrolled students...</p>';
 
-    // Fetch classes created by this teacher
     const { data: classes, error: classError } = await supabase
         .from('classes')
         .select('*')
@@ -285,7 +291,6 @@ window.loadTeacherClassesAndStudents = async function() {
         return;
     }
 
-    // Fetch enrollments with student profile details for these classes
     const classIds = classes.map(c => c.id);
     const { data: enrollments, error: enrollError } = await supabase
         .from('class_enrollments')
@@ -296,7 +301,6 @@ window.loadTeacherClassesAndStudents = async function() {
         console.warn("Could not fetch enrollment details:", enrollError.message);
     }
 
-    // Group students by class_id
     const studentMap = {};
     if (enrollments) {
         enrollments.forEach(item => {
@@ -601,7 +605,6 @@ async function loadTeacherSubmissions() {
     const container = document.getElementById('teacher-submissions-list');
     if (!container) return;
 
-    // Join with profiles table to display student name alongside exam info
     const { data: submissions, error } = await supabase
         .from('submissions')
         .select(`
