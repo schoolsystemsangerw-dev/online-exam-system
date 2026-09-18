@@ -192,8 +192,7 @@ async function loadStudentTeachers(studentId) {
                     address
                 )
             )
-        `)
-        `)
+       `)
         .eq('student_id', studentId);
 
     if (error) {
