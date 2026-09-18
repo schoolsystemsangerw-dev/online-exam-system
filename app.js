@@ -651,11 +651,6 @@ async function loadTeacherSubmissions() {
         `)
         .eq('exams.created_by', user.id)
         .order('submitted_at', { ascending: false });
-            exams!inner(title, total_marks, teacher_id),
-            profiles(full_name)
-        `)
-        .eq('exams.teacher_id', user.id)
-        .order('submitted_at', { ascending: false });
 
     if (error) {
         container.innerHTML = `<p class="text-rose-600 bg-rose-50 p-4 rounded-xl border border-rose-200 text-sm">Error loading submissions: ${escapeHtml(error.message)}</p>`;
