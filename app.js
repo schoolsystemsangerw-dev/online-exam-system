@@ -421,10 +421,9 @@ document.getElementById('join-class-form')?.addEventListener('submit', async (e)
         alert(`Successfully joined ${classData.class_name} (${classData.subject})!`);
         e.target.reset();
         loadExams('student');
-        loadTeacherDirectory();
+        loadStudentTeachers(currentUser.id);
     }
 });
-
 // ==========================================
 // EXAM FETCHING & SUBMISSION HANDLERS
 // ==========================================
