@@ -69,8 +69,8 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
             data: { 
                 full_name: fullName, 
                 role: role,
-                phone_number: phone,
-                physical_address: address
+               phone: phone,
+address: address
             }
         }
     });
@@ -82,12 +82,12 @@ document.getElementById('signup-form')?.addEventListener('submit', async (e) => 
         const { error: profileError } = await supabase
             .from('profiles')
             .upsert([{
-                id: authData.user.id,
-                full_name: fullName,
-                role: role,
-                phone_number: phone,
-                physical_address: address
-            }], { onConflict: 'id' });
+          id: authData.user.id,
+          full_name: fullName,
+          role: role,
+          phone: phone,
+          address: address
+        }], { onConflict: 'id' });
 
         if (profileError) {
             console.warn("Profile table error:", profileError.message);
